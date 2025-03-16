@@ -1,15 +1,21 @@
 import argparse
 import os
+
 os.environ["TRANSFORMERS_CACHE"] = "tmp"
 os.environ["HF_HOME"] = "tmp"
 
 import pandas as pd
-from transformers import Trainer, AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments
 from datasets import Dataset
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    Trainer,
+    TrainingArguments,
+)
 
 from src.category_tree.category_tree import CategoryTree
 
-MODEL_PATH = "models/bge_baseline_1_epoch"
+MODEL_PATH = "models/rubert_label_smoothing_1_epoch"
 CAT_TREE_PATH = "data/category_tree.csv"
 
 CAT_ID_COL = "cat_id"
@@ -37,7 +43,9 @@ def main() -> None:
     def tokenize_function(examples):
         return tokenizer(examples[TITLE_MODEL_COL], truncation=True)
 
-    test_data = test_data.rename(columns={TITLE_COL: TITLE_MODEL_COL, CAT_ID_COL: CAT_ID_MODEL_COL})
+    test_data = test_data.rename(
+        columns={TITLE_COL: TITLE_MODEL_COL, CAT_ID_COL: CAT_ID_MODEL_COL}
+    )
     dataset = Dataset.from_pandas(test_data)
     tokenized_dataset = dataset.map(tokenize_function, batched=True)
 
@@ -46,8 +54,7 @@ def main() -> None:
     ############
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_PATH,
-        num_labels=len(category_tree.leaf_nodes)
+        MODEL_PATH, num_labels=len(category_tree.leaf_nodes)
     )
 
     training_args = TrainingArguments(

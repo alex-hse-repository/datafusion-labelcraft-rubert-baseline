@@ -1,5 +1,7 @@
 import math
+
 import numpy as np
+
 
 def build_category_tree_path(category_tree):
     """
@@ -31,9 +33,9 @@ def build_category_tree_path(category_tree):
 
 def find_lowest_common_ancestor(true_id, pred_id, category_info):
     """
-    Находит наибольшего общего предка (Lowest Common Ancestor - LCA) между предсказанной 
+    Находит наибольшего общего предка (Lowest Common Ancestor - LCA) между предсказанной
     и истинной категорией.
-    
+
     :param true_id: Истинная категория.
     :param pred_id: Предсказанная категория.
     :param category_info: Словарь с уровнями категорий.
@@ -55,9 +57,9 @@ def find_lowest_common_ancestor(true_id, pred_id, category_info):
     if not common_ancestors:
         return None, 0  # Категории не связаны — полный штраф
 
-    # Выбираем самого глубокого предка 
+    # Выбираем самого глубокого предка
     lca = max(common_ancestors, key=lambda cat: category_info[cat]["level"])
-    
+
     return lca, category_info[lca]["level"]
 
 
@@ -70,14 +72,14 @@ def hierarchical_accuracy_with_branch_check(predicted_ids, true_ids, category_tr
     :param category_tree: Словарь {cat_id: parent_id}, описывающий иерархию категорий.
     :return: Средняя метрика по всем примерам.
     """
-    assert len(true_ids) == len(predicted_ids), "Длина списков не совпадает"
-    
+    assert len(true_ids) == len(predicted_ids), "Длина списков не совпадает"  # noqa: S101
+
     # Словарь {cat_id: {"level": level, "ancestors": ancestors}}
     category_info = build_category_tree_path(category_tree)
 
     total_score = 0
 
-    for true_id, pred_id in zip(true_ids, predicted_ids):
+    for true_id, pred_id in zip(true_ids, predicted_ids, strict=False):
         # Находим LCA для истинного и предсказанного значения
         lca, lca_level = find_lowest_common_ancestor(true_id, pred_id, category_info)
 
@@ -86,7 +88,7 @@ def hierarchical_accuracy_with_branch_check(predicted_ids, true_ids, category_tr
         else:
             true_level = category_info.get(true_id, {"level": 0})["level"]
             level_difference = max(0, true_level - lca_level)  # LCA сравниваем с истиной
-            
+
             # Дисконтируем на разницу уровней
             score = 1 / math.exp(level_difference)
 

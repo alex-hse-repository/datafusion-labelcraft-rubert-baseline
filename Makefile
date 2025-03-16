@@ -1,5 +1,4 @@
-CODE=src
-ALL = $(CODE) run.py
+ALL=data src run.py
 
 .PHONY: lint pretty
 
